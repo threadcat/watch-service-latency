@@ -21,8 +21,8 @@ public class WatcherEchoClient {
         WatchService watchService = registerWatch(WATCH_DIR_B);
         DataHandler dataHandler = new DataHandler();
         Statistics statistics = new Statistics();
-        System.out.println("Started");
         long counter = 100_000;
+        System.out.println("Started");
         statistics.start();
         for (long i = 0; i < counter; i++) {
             long timeA = System.nanoTime();

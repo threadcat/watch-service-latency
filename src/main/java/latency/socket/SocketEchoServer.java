@@ -10,6 +10,10 @@ import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 
+/**
+ * Socket latency test echo server.
+ * Reads sequence number from request and replies with that number and timestamp in response.
+ */
 public class SocketEchoServer {
     static final InetSocketAddress ADDRESS = new InetSocketAddress("localhost", 10101);
 
@@ -20,7 +24,7 @@ public class SocketEchoServer {
         serverChannel.socket().setReuseAddress(true);
         serverChannel.bind(ADDRESS);
         serverChannel.register(selector, SelectionKey.OP_ACCEPT);
-        DataHandler telegrapher = new DataHandler();
+        DataHandler dataHandler = new DataHandler();
         System.out.println("Started");
         for (; ; ) {
             if (selector.select() > 0) {
@@ -28,7 +32,7 @@ public class SocketEchoServer {
                 for (SelectionKey key : selectionKeys) {
                     try {
                         if (key.isReadable()) {
-                            processReadableKey(key, telegrapher);
+                            processReadableKey(key, dataHandler);
                         } else if (key.isAcceptable()) {
                             processAcceptableKey(key);
                         }
@@ -38,7 +42,6 @@ public class SocketEchoServer {
                     }
                     selectionKeys.remove(key);
                 }
-                ;
             }
         }
     }

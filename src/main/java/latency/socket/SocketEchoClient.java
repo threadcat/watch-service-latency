@@ -11,7 +11,11 @@ import java.nio.channels.SocketChannel;
 
 import static latency.socket.SocketEchoServer.*;
 
-
+/**
+ * Socket latency test client.
+ * Sends incremental sequence to echo server checking response time.
+ * Prints out summary after execution.
+ */
 public class SocketEchoClient {
 
     public static void main(String[] args) throws Exception {
@@ -22,13 +26,13 @@ public class SocketEchoClient {
         channel.register(selector, SelectionKey.OP_READ);
         DataHandler dataHandler = new DataHandler();
         Statistics statistics = new Statistics();
-        statistics.start();
         long counter = 100_000;
+        System.out.println("Started");
+        statistics.start();
         for (long i = 0; i < counter; i++) {
             long timeA = System.nanoTime();
             dataHandler.writeSocket(i, 0L, channel);
-            int selected = selector.select();
-            if (selected > 0) {
+            if (selector.select() > 0) {
                 final var selectionKeys = selector.selectedKeys();
                 for (SelectionKey key : selectionKeys) {
                     try {
@@ -44,6 +48,7 @@ public class SocketEchoClient {
                         }
                     } catch (IOException e) {
                         System.out.println("Disconnected");
+                        key.cancel();
                     }
                     selectionKeys.remove(key);
                 }
