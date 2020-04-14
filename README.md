@@ -1,8 +1,14 @@
 ##### Testing WatchService latency
+Running without tuning demonstrates dramatic jitter (max vs avg).
+Performance is lower with inode notify though jitter is lower too.
+The most probable timing:
+~~~
+WatchService:
+Executed 100000 times in 5.223 seconds, one-way max latency 10.072 millis, average 25.876 micros
 
-Executed 10000 times in 0.345 seconds, one-way max latency 1.594 millis, average 17.139 micros
-
-No explanation yet for dramatic 'max latency'.
+Sockets:
+Executed 100000 times in 2.548 seconds, one-way max latency 13.651 millis, average 12.559 micros
+~~~
 
 Environment:
 ~~~~

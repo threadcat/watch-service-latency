@@ -1,10 +1,10 @@
-package wsl;
+package latency.watcher;
 
 import com.sun.nio.file.SensitivityWatchEventModifier;
+import latency.common.DataHandler;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.*;
 
@@ -19,35 +19,21 @@ public class WatcherEchoServer {
     static final Path WATCH_DIR_B = Path.of("./watch_dir_b");
     static final File FILE_A = new File(WATCH_DIR_A.toFile(), "watch_file_a.dat");
     static final File FILE_B = new File(WATCH_DIR_B.toFile(), "watch_file_b.dat");
-    static final ByteBuffer BUFFER_RD = ByteBuffer.allocate(16);
-    static final ByteBuffer BUFFER_WR = ByteBuffer.allocate(16);
 
     public static void main(String[] args) throws Exception {
-        FileChannel channel_a = openFile(FILE_A);
-        FileChannel channel_b = openFile(FILE_B);
-        WatchService ws = registerWatch(WATCH_DIR_A);
-        System.out.println("Echo started");
+        FileChannel channelA = openFile(FILE_A);
+        FileChannel channelB = openFile(FILE_B);
+        WatchService watchService = registerWatch(WATCH_DIR_A);
+        DataHandler dataHandler = new DataHandler();
+        System.out.println("Started");
         for (; ; ) {
-            read(ws, channel_a);
-            long sequence = BUFFER_RD.getLong(0);
-            long timestamp = System.nanoTime();
-            write(sequence, timestamp, channel_b);
+            poll(watchService);
+            if (dataHandler.readFile(channelA)) {
+                long sequence = dataHandler.getSequence();
+                long timestamp = System.nanoTime();
+                dataHandler.writeFile(sequence, timestamp, channelB);
+            }
         }
-    }
-
-    static void read(WatchService ws, FileChannel channel_b) throws InterruptedException, IOException {
-        WatchKey key = ws.take();
-        key.pollEvents();
-        key.reset();
-        BUFFER_RD.clear();
-        channel_b.read(BUFFER_RD, 0);
-    }
-
-    static void write(long sequence, long timestamp, FileChannel channel_a) throws IOException {
-        BUFFER_WR.putLong(0, sequence)
-                .putLong(8, timestamp)
-                .rewind();
-        channel_a.write(BUFFER_WR, 0);
     }
 
     static FileChannel openFile(java.io.File file) throws IOException {
@@ -70,5 +56,11 @@ public class WatcherEchoServer {
         WatchEvent.Kind<?>[] eventTypes = new WatchEvent.Kind[]{ENTRY_MODIFY};
         dir.register(ws, eventTypes, SensitivityWatchEventModifier.HIGH);
         return ws;
+    }
+
+    static void poll(WatchService ws) throws InterruptedException {
+        WatchKey key = ws.take();
+        key.pollEvents();
+        key.reset();
     }
 }
