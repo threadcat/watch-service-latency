@@ -9,7 +9,6 @@ public class Statistics {
 
     public void start() {
         reset();
-        this.startMs = System.currentTimeMillis();
     }
 
     public void stop() {
@@ -20,6 +19,7 @@ public class Statistics {
         maxNs = 0;
         totalNs = 0;
         counter = 0;
+        this.startMs = System.currentTimeMillis();
     }
 
     public void update(long timeA, long timeB) {
@@ -31,9 +31,9 @@ public class Statistics {
         counter++;
     }
 
-    // Returns millis
+    // Returns micros
     public double max() {
-        return maxNs * 1e-6;
+        return 1e-3 * maxNs;
     }
 
     // Returns micros

@@ -1,6 +1,15 @@
 ##### Testing WatchService latency
+
+CPU isolation required. Timing example:
+~~~
+WatchService:
+Executed 100000 times in 3.255 seconds, one-way max latency 127.143 us, average 16.216 us
+
+Sockets:
+Executed 100000 times in 1.920 seconds, one-way max latency 34.770 us, average 9.530 us
+~~~
+
 Running without tuning demonstrates dramatic jitter (max vs avg).
-Performance is lower with inode notify though jitter is lower too.
 The most probable timing:
 ~~~
 WatchService:

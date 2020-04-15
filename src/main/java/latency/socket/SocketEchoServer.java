@@ -1,5 +1,6 @@
 package latency.socket;
 
+import latency.common.CpuAffinity;
 import latency.common.DataHandler;
 
 import java.io.IOException;
@@ -18,12 +19,10 @@ public class SocketEchoServer {
     static final InetSocketAddress ADDRESS = new InetSocketAddress("localhost", 10101);
 
     public static void main(String[] args) throws Exception {
+        Thread.currentThread().setName("socket_echo_server");
+        CpuAffinity.setCpuAffinity("0x4");
         Selector selector = Selector.open();
-        ServerSocketChannel serverChannel = ServerSocketChannel.open();
-        serverChannel.configureBlocking(false);
-        serverChannel.socket().setReuseAddress(true);
-        serverChannel.bind(ADDRESS);
-        serverChannel.register(selector, SelectionKey.OP_ACCEPT);
+        startSocketAcceptor(selector);
         DataHandler dataHandler = new DataHandler();
         System.out.println("Started");
         for (; ; ) {
@@ -44,6 +43,14 @@ public class SocketEchoServer {
                 }
             }
         }
+    }
+
+    private static void startSocketAcceptor(Selector selector) throws IOException {
+        ServerSocketChannel serverChannel = ServerSocketChannel.open();
+        serverChannel.configureBlocking(false);
+        serverChannel.setOption(StandardSocketOptions.SO_REUSEADDR, Boolean.TRUE);
+        serverChannel.bind(ADDRESS);
+        serverChannel.register(selector, SelectionKey.OP_ACCEPT);
     }
 
     static void processAcceptableKey(SelectionKey key) throws IOException {

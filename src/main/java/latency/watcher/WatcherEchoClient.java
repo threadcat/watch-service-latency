@@ -1,5 +1,6 @@
 package latency.watcher;
 
+import latency.common.CpuAffinity;
 import latency.common.DataHandler;
 import latency.common.Statistics;
 
@@ -16,12 +17,15 @@ import static latency.watcher.WatcherEchoServer.*;
 public class WatcherEchoClient {
 
     public static void main(String[] args) throws Exception {
+        Thread.currentThread().setName("watcher_echo_client");
+        CpuAffinity.setCpuAffinity("0x8");
         FileChannel channelA = openFile(FILE_A);
         FileChannel channelB = openFile(FILE_B);
         WatchService watchService = registerWatch(WATCH_DIR_B);
         DataHandler dataHandler = new DataHandler();
         Statistics statistics = new Statistics();
-        long counter = 100_000;
+        long counter = 1000_000;
+        long warmup = counter - 100_000;
         System.out.println("Started");
         statistics.start();
         for (long i = 0; i < counter; i++) {
@@ -35,11 +39,14 @@ public class WatcherEchoClient {
                     dataHandler.validate(i, n, timeA, timeB, timeC);
                     statistics.update(timeA, timeB);
                     statistics.update(timeB, timeC);
+                    if (i == warmup) {
+                        statistics.reset();
+                    }
                 }
             }
         }
         statistics.stop();
-        System.out.printf("Executed %s times in %.3f seconds, one-way max latency %.3f millis, average %.3f micros\n",
-                counter, statistics.elapsed(), statistics.max(), statistics.avg());
+        System.out.printf("Executed %s times in %.3f seconds, one-way max latency %.3f us, average %.3f us\n",
+                counter - warmup, statistics.elapsed(), statistics.max(), statistics.avg());
     }
 }

@@ -1,5 +1,6 @@
 package latency.socket;
 
+import latency.common.CpuAffinity;
 import latency.common.DataHandler;
 import latency.common.Statistics;
 
@@ -9,7 +10,7 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 
-import static latency.socket.SocketEchoServer.*;
+import static latency.socket.SocketEchoServer.ADDRESS;
 
 /**
  * Socket latency test client.
@@ -19,14 +20,14 @@ import static latency.socket.SocketEchoServer.*;
 public class SocketEchoClient {
 
     public static void main(String[] args) throws Exception {
-        SocketChannel channel = SocketChannel.open(ADDRESS);
-        channel.configureBlocking(false);
-        channel.setOption(StandardSocketOptions.TCP_NODELAY, Boolean.TRUE);
-        Selector selector = Selector.open();
-        channel.register(selector, SelectionKey.OP_READ);
+        Thread.currentThread().setName("socket_echo_client");
+        CpuAffinity.setCpuAffinity("0x8");
+        SocketChannel channel = openSocket();
+        Selector selector = registerSelector(channel);
         DataHandler dataHandler = new DataHandler();
         Statistics statistics = new Statistics();
-        long counter = 100_000;
+        long counter = 1000_000;
+        long warmup = counter - 100_000;
         System.out.println("Started");
         statistics.start();
         for (long i = 0; i < counter; i++) {
@@ -43,6 +44,9 @@ public class SocketEchoClient {
                             dataHandler.validate(i, n, timeA, timeB, timeC);
                             statistics.update(timeA, timeB);
                             statistics.update(timeB, timeC);
+                            if (i == warmup) {
+                                statistics.reset();
+                            }
                         } else {
                             key.cancel();
                         }
@@ -55,7 +59,20 @@ public class SocketEchoClient {
             }
         }
         statistics.stop();
-        System.out.printf("Executed %s times in %.3f seconds, one-way max latency %.3f millis, average %.3f micros\n",
-                counter, statistics.elapsed(), statistics.max(), statistics.avg());
+        System.out.printf("Executed %s times in %.3f seconds, one-way max latency %.3f us, average %.3f us\n",
+                counter - warmup, statistics.elapsed(), statistics.max(), statistics.avg());
+    }
+
+    private static SocketChannel openSocket() throws IOException {
+        SocketChannel channel = SocketChannel.open(ADDRESS);
+        channel.configureBlocking(false);
+        channel.setOption(StandardSocketOptions.TCP_NODELAY, Boolean.TRUE);
+        return channel;
+    }
+
+    private static Selector registerSelector(SocketChannel channel) throws IOException {
+        Selector selector = Selector.open();
+        channel.register(selector, SelectionKey.OP_READ);
+        return selector;
     }
 }

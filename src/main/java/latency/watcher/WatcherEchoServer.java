@@ -1,6 +1,7 @@
 package latency.watcher;
 
 import com.sun.nio.file.SensitivityWatchEventModifier;
+import latency.common.CpuAffinity;
 import latency.common.DataHandler;
 
 import java.io.File;
@@ -21,6 +22,8 @@ public class WatcherEchoServer {
     static final File FILE_B = new File(WATCH_DIR_B.toFile(), "watch_file_b.dat");
 
     public static void main(String[] args) throws Exception {
+        Thread.currentThread().setName("watcher_echo_server");
+        CpuAffinity.setCpuAffinity("0x4");
         FileChannel channelA = openFile(FILE_A);
         FileChannel channelB = openFile(FILE_B);
         WatchService watchService = registerWatch(WATCH_DIR_A);
