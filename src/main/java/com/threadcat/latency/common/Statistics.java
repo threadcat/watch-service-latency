@@ -1,6 +1,8 @@
 package com.threadcat.latency.common;
 
 /**
+ * Accumulates total, updates maximum, calculates average.
+ *
  * @author threadcat
  */
 public class Statistics {
@@ -35,17 +37,37 @@ public class Statistics {
         counter++;
     }
 
-    // Returns micros
+    /**
+     * Maximum time distance, microseconds.
+     */
     public double max() {
         return 1e-3 * maxNs;
     }
 
-    // Returns micros
+    /**
+     * Average time distance, microseconds.
+     */
     public double avg() {
         return 1e-3 * totalNs / counter;
     }
 
-    // Returns seconds
+    /**
+     * Number of updates
+     */
+    public long counter() {
+        return counter;
+    }
+
+    /**
+     * Accumulated time frames, seconds.
+     */
+    public double total() {
+        return 1e-9 * totalNs;
+    }
+
+    /**
+     * Time elapsed, seconds.
+     */
     public double elapsed() {
         return 1e-3 * (stopMs - startMs);
     }

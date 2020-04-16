@@ -1,15 +1,15 @@
-##### Testing WatchService latency
+### Testing WatchService vs Sockets latency
 
 CPU isolation required. Timing example:
 ~~~
 WatchService:
-Executed 100000 times in 3.255 seconds, one-way max latency 127.143 us, average 16.216 us
+Executed 100000 pings in 3.074 seconds, one-way max latency 130.600 µs, average 15.344 µs
 
 Sockets:
-Executed 100000 times in 1.920 seconds, one-way max latency 34.770 us, average 9.530 us
+Executed 100000 pings in 1.962 seconds, one-way max latency 37.164 µs, average 9.765 µs
 ~~~
 
-Running without tuning demonstrates dramatic jitter (max vs avg).
+Running without 'isolcpus' demonstrates dramatic jitter (max vs avg).
 The most probable timing:
 ~~~
 WatchService:

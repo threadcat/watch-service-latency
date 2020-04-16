@@ -72,6 +72,7 @@ public class SocketEchoServer {
         channel.configureBlocking(false);
         channel.setOption(StandardSocketOptions.TCP_NODELAY, Boolean.TRUE);
         channel.register(key.selector(), SelectionKey.OP_READ);
+        System.out.println("Accepted connection from " + channel.getRemoteAddress());
     }
 
     private static void processReadableKey(SelectionKey key, DataHandler dataHandler) throws IOException {

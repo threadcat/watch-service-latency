@@ -5,7 +5,7 @@ import java.io.IOException;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 
 /**
- * Utility class to set thread cpu affinity.
+ * Utility class to set thread CPU affinity.
  * Thread is expected to have a name unique in first 15 characters because of linux 'ps' format limitation.
  * <p>
  * Show current system state:
@@ -34,11 +34,11 @@ public class NixTaskSet {
             return Long.parseLong(number);
         } else {
             printErr(process);
-            throw new RuntimeException("Failed getting cpu affinity: " + cmd);
+            throw new RuntimeException("Failed getting CPU affinity: " + cmd);
         }
     }
 
-    public static int setCpuMask(String cpuMask) throws IOException, InterruptedException {
+    public static void setCpuMask(String cpuMask) throws IOException, InterruptedException {
         String cmd = SET_MASK
                 .replace("CPU_MASK", cpuMask)
                 .replace("LWP_PID", lightWeightProcessId());
@@ -47,8 +47,8 @@ public class NixTaskSet {
         printOut(process);
         if (status != 0) {
             printErr(process);
+            throw new RuntimeException("Failed setting CPU affinity: " + cmd);
         }
-        return status;
     }
 
     private static String lightWeightProcessId() {

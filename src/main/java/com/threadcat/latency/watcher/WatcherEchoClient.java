@@ -2,7 +2,7 @@ package com.threadcat.latency.watcher;
 
 import com.threadcat.latency.common.DataHandler;
 import com.threadcat.latency.common.NixTaskSet;
-import com.threadcat.latency.common.Statistics;
+import com.threadcat.latency.common.PingClient;
 
 import java.io.File;
 import java.nio.channels.FileChannel;
@@ -34,11 +34,9 @@ public class WatcherEchoClient {
         FileChannel channelB = openFile(fileB);
         WatchService watchService = registerWatch(fileB.getParentFile());
         DataHandler dataHandler = new DataHandler();
-        Statistics statistics = new Statistics();
         long counter = 200_000;
         long warmup = counter - 100_000;
-        System.out.println("Started");
-        statistics.start();
+        PingClient pingClient = new PingClient(warmup);
         for (long i = 0; i < counter; i++) {
             long timeA = System.nanoTime();
             if (dataHandler.writeFile(i, 0L, channelA)) {
@@ -46,19 +44,10 @@ public class WatcherEchoClient {
                 if (dataHandler.readFile(channelB)) {
                     long n = dataHandler.getSequence();
                     long timeB = dataHandler.getTimestamp();
-                    long timeC = System.nanoTime();
-                    dataHandler.validate(i, n, timeA, timeB, timeC);
-                    statistics.update(timeA, timeB);
-                    statistics.update(timeB, timeC);
-                    if (i == warmup) {
-                        System.out.println("Finished warming up");
-                        statistics.reset();
-                    }
+                    pingClient.update(i, n, timeA, timeB);
                 }
             }
         }
-        statistics.stop();
-        System.out.printf("Executed %s times in %.3f seconds, one-way max latency %.3f us, average %.3f us\n",
-                counter - warmup, statistics.elapsed(), statistics.max(), statistics.avg());
+        pingClient.printSummary();
     }
 }

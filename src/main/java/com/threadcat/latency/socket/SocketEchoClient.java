@@ -1,8 +1,6 @@
 package com.threadcat.latency.socket;
 
-import com.threadcat.latency.common.DataHandler;
-import com.threadcat.latency.common.NixTaskSet;
-import com.threadcat.latency.common.Statistics;
+import com.threadcat.latency.common.*;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -38,11 +36,9 @@ public class SocketEchoClient {
     static void loop(SocketChannel channel) throws IOException {
         Selector selector = registerSelector(channel);
         DataHandler dataHandler = new DataHandler();
-        Statistics statistics = new Statistics();
         long counter = 200_000;
         long warmup = counter - 100_000;
-        System.out.println("Started");
-        statistics.start();
+        PingClient pingClient = new PingClient(warmup);
         for (long i = 0; i < counter; i++) {
             long timeA = System.nanoTime();
             dataHandler.writeSocket(i, 0L, channel);
@@ -53,14 +49,7 @@ public class SocketEchoClient {
                         if (dataHandler.readSocket(channel)) {
                             long n = dataHandler.getSequence();
                             long timeB = dataHandler.getTimestamp();
-                            long timeC = System.nanoTime();
-                            dataHandler.validate(i, n, timeA, timeB, timeC);
-                            statistics.update(timeA, timeB);
-                            statistics.update(timeB, timeC);
-                            if (i == warmup) {
-                                System.out.println("Finished warming up");
-                                statistics.reset();
-                            }
+                            pingClient.update(i, n, timeA, timeB);
                         } else {
                             key.cancel();
                         }
@@ -72,9 +61,7 @@ public class SocketEchoClient {
                 }
             }
         }
-        statistics.stop();
-        System.out.printf("Executed %s times in %.3f seconds, one-way max latency %.3f us, average %.3f us\n",
-                counter - warmup, statistics.elapsed(), statistics.max(), statistics.avg());
+        pingClient.printSummary();
     }
 
     private static SocketChannel openSocket(String host, int port) throws IOException {

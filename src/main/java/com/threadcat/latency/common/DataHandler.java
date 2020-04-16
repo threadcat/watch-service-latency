@@ -39,16 +39,6 @@ public class DataHandler {
         return write(sequence, timestamp, channel);
     }
 
-    public void validate(long sequenceA, long sequenceB, long timeA, long timeB, long timeC) {
-        if (sequenceA != sequenceB) {
-            throw new RuntimeException(String.format("Unexpected sequence number %s != %s", sequenceA, sequenceB));
-        }
-        if (timeB < timeA || timeB > timeC) {
-            throw new RuntimeException(
-                    String.format("System nano time does not hold between two JVM [%s, %s, %s]", timeA, timeB, timeC));
-        }
-    }
-
     private boolean read(ByteChannel channel) throws IOException {
         BUFFER_RD.clear();
         for (int i = 0; i < 16; ) {

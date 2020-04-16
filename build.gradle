@@ -1,0 +1,41 @@
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+
+plugins {
+    id 'java'
+    id 'distribution'
+}
+
+group 'threadcat'
+version LocalDateTime.now(ZoneId.of("UTC")).format(DateTimeFormatter.ofPattern("yyyyMMdd"))
+
+sourceCompatibility = 11
+targetCompatibility = 11
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation(
+            'org.junit.jupiter:junit-jupiter:5.6.0',
+            'org.mockito:mockito-junit-jupiter:3.3.0'
+    )
+}
+
+distributions {
+    main {
+        distributionBaseName = 'watch-service-latency'
+        contents {
+            into("/$version") {
+                from 'src/main/scripts'
+                include('*.sh')
+            }
+            into("/$version") {
+                from jar
+                from(project.configurations.runtimeClasspath)
+            }
+        }
+    }
+}
