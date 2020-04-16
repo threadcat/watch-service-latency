@@ -1,30 +1,41 @@
-package latency.watcher;
+package com.threadcat.latency.watcher;
 
-import latency.common.CpuAffinity;
-import latency.common.DataHandler;
-import latency.common.Statistics;
+import com.threadcat.latency.common.DataHandler;
+import com.threadcat.latency.common.NixTaskSet;
+import com.threadcat.latency.common.Statistics;
 
+import java.io.File;
 import java.nio.channels.FileChannel;
 import java.nio.file.WatchService;
 
-import static latency.watcher.WatcherEchoServer.*;
+import static com.threadcat.latency.watcher.WatcherEchoServer.*;
 
 /**
  * WatchService latency test client.
  * Writes incremental sequence to file 'A' getting response from file 'B'.
  * Prints out summary after execution.
+ *
+ * @author threadcat
  */
 public class WatcherEchoClient {
 
     public static void main(String[] args) throws Exception {
+        if (args.length < 2) {
+            System.out.println("Required parameters: <directory> <cpu_mask_hex>");
+            return;
+        }
+        String dir = args[0];
+        String cpuMask = args[1];
         Thread.currentThread().setName("watcher_echo_client");
-        CpuAffinity.setCpuAffinity("0x8");
-        FileChannel channelA = openFile(FILE_A);
-        FileChannel channelB = openFile(FILE_B);
-        WatchService watchService = registerWatch(WATCH_DIR_B);
+        NixTaskSet.setCpuMask(cpuMask);
+        File fileA = createFile(dir, WATCH_DIR_A, FILE_A);
+        File fileB = createFile(dir, WATCH_DIR_B, FILE_B);
+        FileChannel channelA = openFile(fileA);
+        FileChannel channelB = openFile(fileB);
+        WatchService watchService = registerWatch(fileB.getParentFile());
         DataHandler dataHandler = new DataHandler();
         Statistics statistics = new Statistics();
-        long counter = 1000_000;
+        long counter = 200_000;
         long warmup = counter - 100_000;
         System.out.println("Started");
         statistics.start();
@@ -40,6 +51,7 @@ public class WatcherEchoClient {
                     statistics.update(timeA, timeB);
                     statistics.update(timeB, timeC);
                     if (i == warmup) {
+                        System.out.println("Finished warming up");
                         statistics.reset();
                     }
                 }

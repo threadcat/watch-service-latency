@@ -1,4 +1,4 @@
-package latency.common;
+package com.threadcat.latency.common;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -6,6 +6,9 @@ import java.nio.channels.ByteChannel;
 import java.nio.channels.FileChannel;
 import java.nio.channels.SocketChannel;
 
+/**
+ * @author threadcat
+ */
 public class DataHandler {
     private final ByteBuffer BUFFER_RD = ByteBuffer.allocate(16);
     private final ByteBuffer BUFFER_WR = ByteBuffer.allocate(16);
@@ -51,7 +54,7 @@ public class DataHandler {
         for (int i = 0; i < 16; ) {
             int n = channel.read(BUFFER_RD);
             if (n < 0) {
-                System.out.println("Failed reading");
+                System.out.println("Failed reading from channel");
                 return false;
             }
             i += n;
@@ -66,7 +69,7 @@ public class DataHandler {
         for (int i = 0; i < 16; ) {
             int n = channel.write(BUFFER_WR);
             if (n < 0) {
-                System.out.println("Failed writing");
+                System.out.println("Failed writing to channel");
                 return false;
             }
             i += n;

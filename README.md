@@ -35,3 +35,10 @@ Intel(R) Core(TM) i5-2500K CPU @ 3.30GHz
 dd bs=65536 count=163840 if=/dev/zero of=to_delete && rm to_delete
 10737418240 bytes (11 GB, 10 GiB) copied, 41.6239 s, 258 MB/s
 ~~~~
+
+Build instructions:
+~~~
+gradle clean
+gradle build
+gradle assembleDist
+~~~

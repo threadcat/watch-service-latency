@@ -1,5 +1,8 @@
-package latency.common;
+package com.threadcat.latency.common;
 
+/**
+ * @author threadcat
+ */
 public class Statistics {
     private long startMs;
     private long stopMs;
@@ -16,10 +19,11 @@ public class Statistics {
     }
 
     public void reset() {
+        startMs = System.currentTimeMillis();
+        stopMs = 0;
         maxNs = 0;
         totalNs = 0;
         counter = 0;
-        this.startMs = System.currentTimeMillis();
     }
 
     public void update(long timeA, long timeB) {

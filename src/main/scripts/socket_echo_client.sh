@@ -1,6 +1,6 @@
 #!/bin/bash
 
-CLASSPATH=../../../out/production/classes
+APP_HOME=$(dirname "$(readlink -f "$0")")
+X_OPTIONS="-Xlog:gc::time,pid -Xmx512m -Xms512m"
 
-java -cp $CLASSPATH -Xlog:gc*::time,pid -Xmx1g -Xms1g latency.socket.SocketEchoClient
-
+java -cp "${APP_HOME}/*" ${X_OPTIONS} com.threadcat.latency.socket.SocketEchoClient localhost 11000 0x8

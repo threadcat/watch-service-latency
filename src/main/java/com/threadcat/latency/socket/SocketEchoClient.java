@@ -1,32 +1,45 @@
-package latency.socket;
+package com.threadcat.latency.socket;
 
-import latency.common.CpuAffinity;
-import latency.common.DataHandler;
-import latency.common.Statistics;
+import com.threadcat.latency.common.DataHandler;
+import com.threadcat.latency.common.NixTaskSet;
+import com.threadcat.latency.common.Statistics;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.StandardSocketOptions;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
-
-import static latency.socket.SocketEchoServer.ADDRESS;
+import java.util.Set;
 
 /**
  * Socket latency test client.
  * Sends incremental sequence to echo server checking response time.
  * Prints out summary after execution.
+ *
+ * @author threadcat
  */
 public class SocketEchoClient {
 
     public static void main(String[] args) throws Exception {
+        if (args.length < 3) {
+            System.out.println("Required parameters: <host> <port> <cpu_mask_hex>");
+            return;
+        }
+        String host = args[0];
+        int port = Integer.parseInt(args[1]);
+        String cpuMask = args[2];
         Thread.currentThread().setName("socket_echo_client");
-        CpuAffinity.setCpuAffinity("0x8");
-        SocketChannel channel = openSocket();
+        NixTaskSet.setCpuMask(cpuMask);
+        SocketChannel channel = openSocket(host, port);
+        loop(channel);
+    }
+
+    static void loop(SocketChannel channel) throws IOException {
         Selector selector = registerSelector(channel);
         DataHandler dataHandler = new DataHandler();
         Statistics statistics = new Statistics();
-        long counter = 1000_000;
+        long counter = 200_000;
         long warmup = counter - 100_000;
         System.out.println("Started");
         statistics.start();
@@ -34,7 +47,7 @@ public class SocketEchoClient {
             long timeA = System.nanoTime();
             dataHandler.writeSocket(i, 0L, channel);
             if (selector.select() > 0) {
-                final var selectionKeys = selector.selectedKeys();
+                Set<SelectionKey> selectionKeys = selector.selectedKeys();
                 for (SelectionKey key : selectionKeys) {
                     try {
                         if (dataHandler.readSocket(channel)) {
@@ -45,6 +58,7 @@ public class SocketEchoClient {
                             statistics.update(timeA, timeB);
                             statistics.update(timeB, timeC);
                             if (i == warmup) {
+                                System.out.println("Finished warming up");
                                 statistics.reset();
                             }
                         } else {
@@ -63,8 +77,8 @@ public class SocketEchoClient {
                 counter - warmup, statistics.elapsed(), statistics.max(), statistics.avg());
     }
 
-    private static SocketChannel openSocket() throws IOException {
-        SocketChannel channel = SocketChannel.open(ADDRESS);
+    private static SocketChannel openSocket(String host, int port) throws IOException {
+        SocketChannel channel = SocketChannel.open(new InetSocketAddress(host, port));
         channel.configureBlocking(false);
         channel.setOption(StandardSocketOptions.TCP_NODELAY, Boolean.TRUE);
         return channel;

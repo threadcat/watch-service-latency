@@ -1,7 +1,7 @@
-package latency.socket;
+package com.threadcat.latency.socket;
 
-import latency.common.CpuAffinity;
-import latency.common.DataHandler;
+import com.threadcat.latency.common.NixTaskSet;
+import com.threadcat.latency.common.DataHandler;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -10,24 +10,36 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
+import java.util.Set;
 
 /**
  * Socket latency test echo server.
  * Reads sequence number from request and replies with that number and timestamp in response.
+ *
+ * @author threadcat
  */
 public class SocketEchoServer {
-    static final InetSocketAddress ADDRESS = new InetSocketAddress("localhost", 10101);
 
     public static void main(String[] args) throws Exception {
+        if (args.length < 3) {
+            System.out.println("Required parameters: <host> <port> <cpu_mask_hex>");
+            return;
+        }
+        String host = args[0];
+        int port = Integer.parseInt(args[1]);
+        String cpuMask = args[2];
         Thread.currentThread().setName("socket_echo_server");
-        CpuAffinity.setCpuAffinity("0x4");
-        Selector selector = Selector.open();
-        startSocketAcceptor(selector);
+        NixTaskSet.setCpuMask(cpuMask);
+        Selector selector = startSocketAcceptor(host, port);
+        eventLoop(selector);
+    }
+
+    static void eventLoop(Selector selector) throws IOException {
         DataHandler dataHandler = new DataHandler();
         System.out.println("Started");
         for (; ; ) {
             if (selector.select() > 0) {
-                final var selectionKeys = selector.selectedKeys();
+                Set<SelectionKey> selectionKeys = selector.selectedKeys();
                 for (SelectionKey key : selectionKeys) {
                     try {
                         if (key.isReadable()) {
@@ -45,12 +57,14 @@ public class SocketEchoServer {
         }
     }
 
-    private static void startSocketAcceptor(Selector selector) throws IOException {
+    private static Selector startSocketAcceptor(String host, int port) throws IOException {
         ServerSocketChannel serverChannel = ServerSocketChannel.open();
         serverChannel.configureBlocking(false);
         serverChannel.setOption(StandardSocketOptions.SO_REUSEADDR, Boolean.TRUE);
-        serverChannel.bind(ADDRESS);
+        serverChannel.bind(new InetSocketAddress(host, port));
+        Selector selector = Selector.open();
         serverChannel.register(selector, SelectionKey.OP_ACCEPT);
+        return selector;
     }
 
     static void processAcceptableKey(SelectionKey key) throws IOException {
