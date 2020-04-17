@@ -19,8 +19,7 @@ import static java.nio.charset.StandardCharsets.US_ASCII;
  * @author threadcat
  */
 public class NixTaskSet {
-    static final String MAIN_PID = "ps -ef | grep CLASS_NAME | grep -v grep | awk '{print $3}'";
-    static final String LWP_PID = "ps -L --ppid $(MAIN_PID) | grep THREAD_NAME | awk '{print $2}'";
+    static final String LWP_PID = "ps -eL | grep MAIN_PID | grep THREAD_NAME | awk '{print $2}'";
     static final String GET_MASK = "taskset -p $(LWP_PID)";
     static final String SET_MASK = "taskset -p CPU_MASK $(LWP_PID)";
 
@@ -30,8 +29,8 @@ public class NixTaskSet {
         int status = process.waitFor();
         if (status == 0) {
             String output = new String(process.getInputStream().readAllBytes(), US_ASCII);
-            String number = output.replaceAll("(^.* )|(\n)", "");
-            return Long.parseLong(number);
+            String cpuMask = output.replaceAll("(^.* )|(\n)", "");
+            return Long.parseLong(cpuMask);
         } else {
             printErr(process);
             throw new RuntimeException("Failed getting CPU affinity: " + cmd);
@@ -52,20 +51,18 @@ public class NixTaskSet {
     }
 
     private static String lightWeightProcessId() {
-        String pid = MAIN_PID
-                .replace("CLASS_NAME", getCallerClassName());
         return LWP_PID
-                .replace("MAIN_PID", pid)
+                .replace("MAIN_PID", processId())
                 .replace("THREAD_NAME", threadName15());
+    }
+
+    private static String processId() {
+        return Long.toString(ProcessHandle.current().pid());
     }
 
     private static String threadName15() {
         String name = Thread.currentThread().getName();
         return name.substring(0, Math.min(15, name.length()));
-    }
-
-    private static String getCallerClassName() {
-        return Thread.currentThread().getStackTrace()[4].getClassName();
     }
 
     private static void printOut(Process process) throws IOException {

@@ -28,11 +28,11 @@ distributions {
     main {
         distributionBaseName = 'watch-service-latency'
         contents {
-            into("/$version") {
+            into("") {
                 from 'src/main/scripts'
                 include('*.sh')
             }
-            into("/$version") {
+            into("") {
                 from jar
                 from(project.configurations.runtimeClasspath)
             }

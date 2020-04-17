@@ -1,12 +1,21 @@
-### Testing WatchService vs Sockets latency
+### WatchService vs Sockets latency
+
+WatchService allows to use file system for message exchange without spinning.
+WatchService and FileChannel can be seen in a way like Selector and SocketChannel.
+
+This code implements two similar client-server pairs communicating through file system and sockets.
+Client pings server with incremental request id waiting for response with that id and server timestamp.
 
 CPU isolation required. Timing example:
 ~~~
-WatchService:
-Executed 100000 pings in 3.074 seconds, one-way max latency 130.600 µs, average 15.344 µs
+WatchService NVMe:
+Executed 100000 pings in 3.189 seconds, one-way max latency 35.021 µs, average 15.912 µs
+
+WatchService SATA3:
+Executed 100000 pings in 3.054 seconds, one-way max latency 111.862 µs, average 15.243 µs
 
 Sockets:
-Executed 100000 pings in 1.962 seconds, one-way max latency 37.164 µs, average 9.765 µs
+Executed 100000 pings in 1.909 seconds, one-way max latency 37.831 µs, average 9.505 µs
 ~~~
 
 Running without 'isolcpus' demonstrates dramatic jitter (max vs avg).
@@ -31,9 +40,6 @@ Linux 5.5.13-200.fc31.x86_64 #1 SMP Wed Mar 25 21:55:30 UTC 2020 x86_64 x86_64 x
 
 cat /proc/cpuinfo
 Intel(R) Core(TM) i5-2500K CPU @ 3.30GHz
-
-dd bs=65536 count=163840 if=/dev/zero of=to_delete && rm to_delete
-10737418240 bytes (11 GB, 10 GiB) copied, 41.6239 s, 258 MB/s
 ~~~~
 
 Build instructions:

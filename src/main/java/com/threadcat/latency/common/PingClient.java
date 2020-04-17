@@ -6,7 +6,7 @@ package com.threadcat.latency.common;
 public class PingClient {
     private static final String MICRO = (char) 0xB5 + "s";
     private Statistics statistics = new Statistics();
-    private ClockOffset clockOffset = new ClockOffset();
+    private DistantClock clockOffset = new DistantClock();
     private long warmup;
 
     public PingClient(long warmup) {
@@ -20,7 +20,7 @@ public class PingClient {
             throw new RuntimeException(String.format("Unexpected sequence number %s != %s", sequenceA, sequenceB));
         }
         long serverTime = clockOffset.adjust(timeA, timeB, timeC);
-        if (clockOffset.isAdjusted() && sequenceA > warmup) {
+        if (clockOffset.isOffsetUpdated() && sequenceA > warmup) {
             System.out.println("Server time adjusted after warming up, new offset: " + clockOffset.getOffset());
         }
         if (sequenceA == warmup) {
