@@ -30,10 +30,10 @@ public class SocketEchoClient {
         Thread.currentThread().setName("socket_echo_client");
         NixTaskSet.setCpuMask(cpuMask);
         SocketChannel channel = openSocket(host, port);
-        loop(channel);
+        eventLoop(channel);
     }
 
-    static void loop(SocketChannel channel) throws IOException {
+    private static void eventLoop(SocketChannel channel) throws IOException {
         Selector selector = registerSelector(channel);
         DataHandler dataHandler = new DataHandler();
         long counter = 200_000;
@@ -41,7 +41,7 @@ public class SocketEchoClient {
         PingClient pingClient = new PingClient(warmup);
         for (long i = 0; i < counter; i++) {
             long timeA = System.nanoTime();
-            dataHandler.writeSocket(i, 0L, channel);
+            dataHandler.writeSocket(channel, i, 0L);
             if (selector.select() > 0) {
                 Set<SelectionKey> selectionKeys = selector.selectedKeys();
                 for (SelectionKey key : selectionKeys) {

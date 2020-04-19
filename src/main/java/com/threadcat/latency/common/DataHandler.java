@@ -7,6 +7,8 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.SocketChannel;
 
 /**
+ * Handler for read/write operations on {@link FileChannel} and {@link SocketChannel}.
+ *
  * @author threadcat
  */
 public class DataHandler {
@@ -30,13 +32,13 @@ public class DataHandler {
         return read(channel);
     }
 
-    public boolean writeFile(long sequence, long timestamp, FileChannel channel) throws IOException {
+    public boolean writeFile(FileChannel channel, long sequence, long timestamp) throws IOException {
         channel.position(0L);
-        return write(sequence, timestamp, channel);
+        return write(channel, sequence, timestamp);
     }
 
-    public boolean writeSocket(long sequence, long timestamp, SocketChannel channel) throws IOException {
-        return write(sequence, timestamp, channel);
+    public boolean writeSocket(SocketChannel channel, long sequence, long timestamp) throws IOException {
+        return write(channel, sequence, timestamp);
     }
 
     private boolean read(ByteChannel channel) throws IOException {
@@ -52,7 +54,7 @@ public class DataHandler {
         return true;
     }
 
-    private boolean write(long sequence, long timestamp, ByteChannel channel) throws IOException {
+    private boolean write(ByteChannel channel, long sequence, long timestamp) throws IOException {
         BUFFER_WR.putLong(0, sequence)
                 .putLong(8, timestamp)
                 .rewind();

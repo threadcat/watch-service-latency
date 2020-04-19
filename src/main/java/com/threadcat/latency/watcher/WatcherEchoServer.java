@@ -32,11 +32,13 @@ public class WatcherEchoServer {
         String cpuMask = args[1];
         Thread.currentThread().setName("watcher_echo_server");
         NixTaskSet.setCpuMask(cpuMask);
-        File fileA = createFile(dir, WATCH_DIR_A, FILE_A);
-        File fileB = createFile(dir, WATCH_DIR_B, FILE_B);
-        FileChannel channelA = openFile(fileA);
-        FileChannel channelB = openFile(fileB);
-        WatchService watchService = registerWatch(fileA.getParentFile());
+        eventLoop(dir);
+    }
+
+    private static void eventLoop(String dir) throws IOException, InterruptedException {
+        FileChannel channelA = openFile(dir, WATCH_DIR_A, FILE_A);
+        FileChannel channelB = openFile(dir, WATCH_DIR_B, FILE_B);
+        WatchService watchService = registerWatch(dir, WATCH_DIR_A);
         DataHandler dataHandler = new DataHandler();
         System.out.println("Started");
         for (; ; ) {
@@ -44,18 +46,33 @@ public class WatcherEchoServer {
             if (dataHandler.readFile(channelA)) {
                 long sequence = dataHandler.getSequence();
                 long timestamp = System.nanoTime();
-                if (!dataHandler.writeFile(sequence, timestamp, channelB)) {
+                if (!dataHandler.writeFile(channelB, sequence, timestamp)) {
                     throw new RuntimeException("Failed writing to " + FILE_B);
                 }
             }
         }
     }
 
-    static FileChannel openFile(File file) throws IOException {
+    static FileChannel openFile(String tmpDir, String subDir, String fileName) throws IOException {
+        File file = createFile(tmpDir, subDir, fileName);
         return FileChannel.open(file.toPath(), StandardOpenOption.READ, StandardOpenOption.WRITE);
     }
 
-    static File createFile(String tmpDir, String subDir, String fileName) throws IOException {
+    static WatchService registerWatch(String tmpDir, String subDir) throws IOException {
+        WatchService ws = FileSystems.getDefault().newWatchService();
+        WatchEvent.Kind<?>[] eventTypes = new WatchEvent.Kind[]{ENTRY_MODIFY};
+        Path path = Path.of(tmpDir, subDir);
+        path.register(ws, eventTypes, SensitivityWatchEventModifier.HIGH);
+        return ws;
+    }
+
+    static void poll(WatchService ws) throws InterruptedException {
+        WatchKey key = ws.take();
+        key.pollEvents();
+        key.reset();
+    }
+
+    private static File createFile(String tmpDir, String subDir, String fileName) throws IOException {
         Path path = Path.of(tmpDir, subDir);
         File file = new File(path.toFile(), fileName);
         File dir = file.getParentFile();
@@ -70,21 +87,5 @@ public class WatcherEchoServer {
             }
         }
         return file;
-    }
-
-    static WatchService registerWatch(File dir) throws IOException {
-        if (!dir.isDirectory()) {
-            throw new IllegalArgumentException("Expected directory: " + dir);
-        }
-        WatchService ws = FileSystems.getDefault().newWatchService();
-        WatchEvent.Kind<?>[] eventTypes = new WatchEvent.Kind[]{ENTRY_MODIFY};
-        dir.toPath().register(ws, eventTypes, SensitivityWatchEventModifier.HIGH);
-        return ws;
-    }
-
-    static void poll(WatchService ws) throws InterruptedException {
-        WatchKey key = ws.take();
-        key.pollEvents();
-        key.reset();
     }
 }

@@ -1,6 +1,8 @@
 package com.threadcat.latency.common;
 
 /**
+ * Ping statistics controller for warming up and timing.
+ *
  * @author threadcat
  */
 public class PingClient {
@@ -25,15 +27,19 @@ public class PingClient {
         }
         if (sequenceA == warmup) {
             System.out.println("Finished warming up");
-            statistics.reset();
+            statistics.reset(System.currentTimeMillis());
         }
         statistics.update(timeA, serverTime);
         statistics.update(serverTime, timeC);
     }
 
     public void printSummary() {
-        statistics.stop();
+        statistics.stop(System.currentTimeMillis());
+        long counter = statistics.counter() / 2;
+        double elapsed = 1e-3 * statistics.elapsed(); // seconds
+        double max = 1e-3 * statistics.max(); // microseconds
+        double avg = 1e-3 * statistics.avg(); // microseconds
         System.out.printf("Executed %s pings in %.3f seconds, one-way max latency %.3f %s, average %.3f %s\n",
-                statistics.counter() / 2, statistics.elapsed(), statistics.max(), MICRO, statistics.avg(), MICRO);
+                counter, elapsed, max, MICRO, avg, MICRO);
     }
 }

@@ -6,49 +6,49 @@ package com.threadcat.latency.common;
  * @author threadcat
  */
 public class Statistics {
-    private long startMs;
-    private long stopMs;
-    private long maxNs;
-    private long totalNs;
+    private long start;
+    private long stop;
+    private long max;
+    private long total;
     private long counter;
 
-    public void start() {
-        reset();
+    public void start(long start) {
+        reset(start);
     }
 
-    public void stop() {
-        this.stopMs = System.currentTimeMillis();
+    public void stop(long stop) {
+        this.stop = stop;
     }
 
-    public void reset() {
-        startMs = System.currentTimeMillis();
-        stopMs = 0;
-        maxNs = 0;
-        totalNs = 0;
+    public void reset(long start) {
+        this.start = start;
+        stop = 0;
+        max = 0;
+        total = 0;
         counter = 0;
     }
 
     public void update(long timeA, long timeB) {
         long delta = timeB - timeA;
-        if (delta > maxNs) {
-            maxNs = delta;
+        if (delta > max) {
+            max = delta;
         }
-        totalNs += delta;
+        total += delta;
         counter++;
     }
 
     /**
-     * Maximum time distance, microseconds.
+     * Maximum time distance.
      */
-    public double max() {
-        return 1e-3 * maxNs;
+    public long max() {
+        return max;
     }
 
     /**
-     * Average time distance, microseconds.
+     * Average time distance.
      */
     public double avg() {
-        return 1e-3 * totalNs / counter;
+        return (double) total / counter;
     }
 
     /**
@@ -59,16 +59,16 @@ public class Statistics {
     }
 
     /**
-     * Accumulated time frames, seconds.
+     * Accumulated time frames.
      */
-    public double total() {
-        return 1e-9 * totalNs;
+    public long total() {
+        return total;
     }
 
     /**
-     * Time elapsed, seconds.
+     * Time elapsed.
      */
-    public double elapsed() {
-        return 1e-3 * (stopMs - startMs);
+    public long elapsed() {
+        return stop - start;
     }
 }

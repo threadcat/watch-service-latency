@@ -2,17 +2,22 @@ package com.threadcat.latency.common;
 
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class NixTaskSetTest {
 
     public static void main(String[] args) throws Exception {
         Thread.currentThread().setName("latency_something");
-        String cpuAffinity = Long.toBinaryString(NixTaskSet.getCpuMask());
-        System.out.println(cpuAffinity);
+        printCpuMaskHex();
         NixTaskSet.setCpuMask("0x4");
-        cpuAffinity = Long.toBinaryString(NixTaskSet.getCpuMask());
-        System.out.println(cpuAffinity);
+        printCpuMaskHex();
+    }
+
+    private static void printCpuMaskHex() throws IOException, InterruptedException {
+        long cpuMask = NixTaskSet.getCpuMask();
+        System.out.println(Long.toBinaryString(cpuMask));
     }
 
     @Test

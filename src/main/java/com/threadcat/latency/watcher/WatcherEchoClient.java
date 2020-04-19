@@ -4,7 +4,7 @@ import com.threadcat.latency.common.DataHandler;
 import com.threadcat.latency.common.NixTaskSet;
 import com.threadcat.latency.common.PingClient;
 
-import java.io.File;
+import java.io.IOException;
 import java.nio.channels.FileChannel;
 import java.nio.file.WatchService;
 
@@ -28,18 +28,20 @@ public class WatcherEchoClient {
         String cpuMask = args[1];
         Thread.currentThread().setName("watcher_echo_client");
         NixTaskSet.setCpuMask(cpuMask);
-        File fileA = createFile(dir, WATCH_DIR_A, FILE_A);
-        File fileB = createFile(dir, WATCH_DIR_B, FILE_B);
-        FileChannel channelA = openFile(fileA);
-        FileChannel channelB = openFile(fileB);
-        WatchService watchService = registerWatch(fileB.getParentFile());
+        eventLoop(dir);
+    }
+
+    private static void eventLoop(String dir) throws IOException, InterruptedException {
+        FileChannel channelA = openFile(dir, WATCH_DIR_A, FILE_A);
+        FileChannel channelB = openFile(dir, WATCH_DIR_B, FILE_B);
+        WatchService watchService = registerWatch(dir, WATCH_DIR_B);
         DataHandler dataHandler = new DataHandler();
         long counter = 200_000;
         long warmup = counter - 100_000;
         PingClient pingClient = new PingClient(warmup);
         for (long i = 0; i < counter; i++) {
             long timeA = System.nanoTime();
-            if (dataHandler.writeFile(i, 0L, channelA)) {
+            if (dataHandler.writeFile(channelA, i, 0L)) {
                 poll(watchService);
                 if (dataHandler.readFile(channelB)) {
                     long n = dataHandler.getSequence();

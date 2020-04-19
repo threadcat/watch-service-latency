@@ -34,7 +34,7 @@ public class SocketEchoServer {
         eventLoop(selector);
     }
 
-    static void eventLoop(Selector selector) throws IOException {
+    private static void eventLoop(Selector selector) throws IOException {
         DataHandler dataHandler = new DataHandler();
         System.out.println("Started");
         for (; ; ) {
@@ -67,7 +67,7 @@ public class SocketEchoServer {
         return selector;
     }
 
-    static void processAcceptableKey(SelectionKey key) throws IOException {
+    private static void processAcceptableKey(SelectionKey key) throws IOException {
         SocketChannel channel = ((ServerSocketChannel) key.channel()).accept();
         channel.configureBlocking(false);
         channel.setOption(StandardSocketOptions.TCP_NODELAY, Boolean.TRUE);
@@ -80,7 +80,7 @@ public class SocketEchoServer {
         if (dataHandler.readSocket(channel)) {
             long sequence = dataHandler.getSequence();
             long timestamp = System.nanoTime();
-            if (!dataHandler.writeSocket(sequence, timestamp, channel)) {
+            if (!dataHandler.writeSocket(channel, sequence, timestamp)) {
                 key.cancel();
             }
         } else {
