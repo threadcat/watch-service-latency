@@ -8,11 +8,8 @@ Client pings server with incremental request id waiting for response with that i
 
 CPU isolation required. Timing example:
 ~~~
-WatchService NVMe:
+WatchService:
 Executed 100000 pings in 3.189 seconds, one-way max latency 35.021 µs, average 15.912 µs
-
-WatchService SATA3:
-Executed 100000 pings in 3.054 seconds, one-way max latency 111.862 µs, average 15.243 µs
 
 Sockets:
 Executed 100000 pings in 1.909 seconds, one-way max latency 37.831 µs, average 9.505 µs

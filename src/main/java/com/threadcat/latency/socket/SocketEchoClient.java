@@ -1,6 +1,8 @@
 package com.threadcat.latency.socket;
 
-import com.threadcat.latency.common.*;
+import com.threadcat.latency.common.DataHandler;
+import com.threadcat.latency.common.NixTaskSet;
+import com.threadcat.latency.common.PingClient;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -18,6 +20,7 @@ import java.util.Set;
  * @author threadcat
  */
 public class SocketEchoClient {
+    private static final String SOCKET_ECHO_CLIENT = "socket_echo_client";
 
     public static void main(String[] args) throws Exception {
         if (args.length < 3) {
@@ -27,8 +30,8 @@ public class SocketEchoClient {
         String host = args[0];
         int port = Integer.parseInt(args[1]);
         String cpuMask = args[2];
-        Thread.currentThread().setName("socket_echo_client");
-        NixTaskSet.setCpuMask(cpuMask);
+        Thread.currentThread().setName(SOCKET_ECHO_CLIENT);
+        NixTaskSet.setCpuMask(SOCKET_ECHO_CLIENT, cpuMask);
         SocketChannel channel = openSocket(host, port);
         eventLoop(channel);
     }

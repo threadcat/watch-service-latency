@@ -1,7 +1,7 @@
 package com.threadcat.latency.socket;
 
-import com.threadcat.latency.common.NixTaskSet;
 import com.threadcat.latency.common.DataHandler;
+import com.threadcat.latency.common.NixTaskSet;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -19,6 +19,7 @@ import java.util.Set;
  * @author threadcat
  */
 public class SocketEchoServer {
+    private static final String SOCKET_ECHO_SERVER = "socket_echo_server";
 
     public static void main(String[] args) throws Exception {
         if (args.length < 3) {
@@ -28,8 +29,8 @@ public class SocketEchoServer {
         String host = args[0];
         int port = Integer.parseInt(args[1]);
         String cpuMask = args[2];
-        Thread.currentThread().setName("socket_echo_server");
-        NixTaskSet.setCpuMask(cpuMask);
+        Thread.currentThread().setName(SOCKET_ECHO_SERVER);
+        NixTaskSet.setCpuMask(SOCKET_ECHO_SERVER, cpuMask);
         Selector selector = startSocketAcceptor(host, port);
         eventLoop(selector);
     }

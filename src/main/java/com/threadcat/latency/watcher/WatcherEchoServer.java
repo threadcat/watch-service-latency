@@ -18,6 +18,7 @@ import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
  * @author threadcat
  */
 public class WatcherEchoServer {
+    private static final String WATCHER_ECHO_SERVER = "watcher_echo_server";
     static final String WATCH_DIR_A = "watch_dir_a";
     static final String WATCH_DIR_B = "watch_dir_b";
     static final String FILE_A = "watch_file_a.dat";
@@ -30,8 +31,8 @@ public class WatcherEchoServer {
         }
         String dir = args[0];
         String cpuMask = args[1];
-        Thread.currentThread().setName("watcher_echo_server");
-        NixTaskSet.setCpuMask(cpuMask);
+        Thread.currentThread().setName(WATCHER_ECHO_SERVER);
+        NixTaskSet.setCpuMask(WATCHER_ECHO_SERVER, cpuMask);
         eventLoop(dir);
     }
 

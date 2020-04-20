@@ -23,8 +23,8 @@ public class NixTaskSet {
     static final String GET_MASK = "taskset -p $(LWP_PID)";
     static final String SET_MASK = "taskset -p CPU_MASK $(LWP_PID)";
 
-    public static long getCpuMask() throws IOException, InterruptedException {
-        String cmd = GET_MASK.replace("LWP_PID", lightWeightProcessId());
+    public static long getCpuMask(String threadName) throws IOException, InterruptedException {
+        String cmd = GET_MASK.replace("LWP_PID", lightWeightProcessId(threadName));
         Process process = new ProcessBuilder("bash", "-c", cmd).start();
         int status = process.waitFor();
         if (status == 0) {
@@ -37,10 +37,10 @@ public class NixTaskSet {
         }
     }
 
-    public static void setCpuMask(String cpuMask) throws IOException, InterruptedException {
+    public static void setCpuMask(String threadName, String cpuMask) throws IOException, InterruptedException {
         String cmd = SET_MASK
                 .replace("CPU_MASK", cpuMask)
-                .replace("LWP_PID", lightWeightProcessId());
+                .replace("LWP_PID", lightWeightProcessId(threadName));
         Process process = new ProcessBuilder("bash", "-c", cmd).start();
         int status = process.waitFor();
         printOut(process);
@@ -50,18 +50,17 @@ public class NixTaskSet {
         }
     }
 
-    private static String lightWeightProcessId() {
+    private static String lightWeightProcessId(String threadName) {
         return LWP_PID
                 .replace("MAIN_PID", processId())
-                .replace("THREAD_NAME", threadName15());
+                .replace("THREAD_NAME", threadName15(threadName));
     }
 
     private static String processId() {
         return Long.toString(ProcessHandle.current().pid());
     }
 
-    private static String threadName15() {
-        String name = Thread.currentThread().getName();
+    private static String threadName15(String name) {
         return name.substring(0, Math.min(15, name.length()));
     }
 

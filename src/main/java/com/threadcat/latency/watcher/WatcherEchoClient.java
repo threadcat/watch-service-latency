@@ -18,6 +18,7 @@ import static com.threadcat.latency.watcher.WatcherEchoServer.*;
  * @author threadcat
  */
 public class WatcherEchoClient {
+    private static final String WATCHER_ECHO_CLIENT = "watcher_echo_client";
 
     public static void main(String[] args) throws Exception {
         if (args.length < 2) {
@@ -26,8 +27,8 @@ public class WatcherEchoClient {
         }
         String dir = args[0];
         String cpuMask = args[1];
-        Thread.currentThread().setName("watcher_echo_client");
-        NixTaskSet.setCpuMask(cpuMask);
+        Thread.currentThread().setName(WATCHER_ECHO_CLIENT);
+        NixTaskSet.setCpuMask(WATCHER_ECHO_CLIENT, cpuMask);
         eventLoop(dir);
     }
 
