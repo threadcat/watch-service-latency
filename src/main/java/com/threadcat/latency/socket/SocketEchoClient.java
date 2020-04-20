@@ -23,24 +23,25 @@ public class SocketEchoClient {
     private static final String SOCKET_ECHO_CLIENT = "socket_echo_client";
 
     public static void main(String[] args) throws Exception {
-        if (args.length < 3) {
-            System.out.println("Required parameters: <host> <port> <cpu_mask_hex>");
+        if (args.length < 5) {
+            System.out.println("Required parameters: <host> <port> <cpu_mask_hex> <warmup_cycles> <measure_cycles>");
             return;
         }
         String host = args[0];
         int port = Integer.parseInt(args[1]);
         String cpuMask = args[2];
+        int warmup = Integer.parseInt(args[3]);
+        int measure = Integer.parseInt(args[4]);
         Thread.currentThread().setName(SOCKET_ECHO_CLIENT);
         NixTaskSet.setCpuMask(SOCKET_ECHO_CLIENT, cpuMask);
         SocketChannel channel = openSocket(host, port);
-        eventLoop(channel);
+        eventLoop(channel, warmup, measure);
     }
 
-    private static void eventLoop(SocketChannel channel) throws IOException {
+    private static void eventLoop(SocketChannel channel, long warmup, long measure) throws IOException {
         Selector selector = registerSelector(channel);
         DataHandler dataHandler = new DataHandler();
-        long counter = 200_000;
-        long warmup = counter - 100_000;
+        long counter = warmup + measure;
         PingClient pingClient = new PingClient(warmup);
         for (long i = 0; i < counter; i++) {
             long timeA = System.nanoTime();
