@@ -46,7 +46,6 @@ public class DataHandler {
         for (int i = 0; i < 16; ) {
             int n = channel.read(BUFFER_RD);
             if (n < 0) {
-                System.out.println("Failed reading from channel");
                 return false;
             }
             i += n;
@@ -61,7 +60,6 @@ public class DataHandler {
         for (int i = 0; i < 16; ) {
             int n = channel.write(BUFFER_WR);
             if (n < 0) {
-                System.out.println("Failed writing to channel");
                 return false;
             }
             i += n;

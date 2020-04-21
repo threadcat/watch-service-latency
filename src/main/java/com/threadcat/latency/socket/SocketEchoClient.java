@@ -45,21 +45,20 @@ public class SocketEchoClient {
         PingClient pingClient = new PingClient(warmup);
         for (long i = 0; i < counter; i++) {
             long timeA = System.nanoTime();
-            dataHandler.writeSocket(channel, i, 0L);
+            if (!dataHandler.writeSocket(channel, i, 0L)) {
+                System.out.println("Connection broken " + channel.getRemoteAddress());
+                return;
+            }
             if (selector.select() > 0) {
                 Set<SelectionKey> selectionKeys = selector.selectedKeys();
                 for (SelectionKey key : selectionKeys) {
-                    try {
-                        if (dataHandler.readSocket(channel)) {
-                            long n = dataHandler.getSequence();
-                            long timeB = dataHandler.getTimestamp();
-                            pingClient.update(i, n, timeA, timeB);
-                        } else {
-                            key.cancel();
-                        }
-                    } catch (IOException e) {
-                        System.out.println("Disconnected");
-                        key.cancel();
+                    if (dataHandler.readSocket(channel)) {
+                        long n = dataHandler.getSequence();
+                        long timeB = dataHandler.getTimestamp();
+                        pingClient.update(i, n, timeA, timeB);
+                    } else {
+                        System.out.println("Disconnected " + channel.getRemoteAddress());
+                        return;
                     }
                     selectionKeys.remove(key);
                 }

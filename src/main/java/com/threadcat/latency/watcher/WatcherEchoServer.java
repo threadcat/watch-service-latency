@@ -48,8 +48,12 @@ public class WatcherEchoServer {
                 long sequence = dataHandler.getSequence();
                 long timestamp = System.nanoTime();
                 if (!dataHandler.writeFile(channelB, sequence, timestamp)) {
-                    throw new RuntimeException("Failed writing to " + FILE_B);
+                    System.out.println("Failed writing to " + FILE_B);
+                    break;
                 }
+            } else {
+                System.out.println("Failed reading from " + FILE_A);
+                break;
             }
         }
     }

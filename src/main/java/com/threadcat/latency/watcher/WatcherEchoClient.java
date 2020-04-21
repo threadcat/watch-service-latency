@@ -43,14 +43,18 @@ public class WatcherEchoClient {
         PingClient pingClient = new PingClient(warmup);
         for (long i = 0; i < counter; i++) {
             long timeA = System.nanoTime();
-            if (dataHandler.writeFile(channelA, i, 0L)) {
-                poll(watchService);
-                if (dataHandler.readFile(channelB)) {
-                    long n = dataHandler.getSequence();
-                    long timeB = dataHandler.getTimestamp();
-                    pingClient.update(i, n, timeA, timeB);
-                }
+            if (!dataHandler.writeFile(channelA, i, 0L)) {
+                System.out.println("Failed writing to " + FILE_A);
+                return;
             }
+            poll(watchService);
+            if (!dataHandler.readFile(channelB)) {
+                System.out.println("Failed reading from " + FILE_B);
+                return;
+            }
+            long n = dataHandler.getSequence();
+            long timeB = dataHandler.getTimestamp();
+            pingClient.update(i, n, timeA, timeB);
         }
         pingClient.printSummary();
     }
