@@ -2,7 +2,7 @@ package com.threadcat.latency.watcher;
 
 import com.sun.nio.file.SensitivityWatchEventModifier;
 import com.threadcat.latency.common.DataHandler;
-import com.threadcat.latency.common.NixTaskSet;
+import com.threadcat.latency.common.LinuxTaskSet;
 
 import java.io.File;
 import java.io.IOException;
@@ -19,10 +19,10 @@ import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
  */
 public class WatcherEchoServer {
     private static final String WATCHER_ECHO_SERVER = "watcher_echo_server";
-    static final String WATCH_DIR_A = "watch_dir_a";
-    static final String WATCH_DIR_B = "watch_dir_b";
-    static final String FILE_A = "watch_file_a.dat";
-    static final String FILE_B = "watch_file_b.dat";
+    public static final String WATCH_DIR_A = "watch_dir_a";
+    public static final String WATCH_DIR_B = "watch_dir_b";
+    public static final String FILE_A = "watch_file_a.dat";
+    public static final String FILE_B = "watch_file_b.dat";
 
     public static void main(String[] args) throws Exception {
         if (args.length < 2) {
@@ -32,7 +32,7 @@ public class WatcherEchoServer {
         String dir = args[0];
         String cpuMask = args[1];
         Thread.currentThread().setName(WATCHER_ECHO_SERVER);
-        NixTaskSet.setCpuMask(WATCHER_ECHO_SERVER, cpuMask);
+        LinuxTaskSet.setCpuMask(WATCHER_ECHO_SERVER, cpuMask);
         eventLoop(dir);
     }
 
@@ -58,7 +58,7 @@ public class WatcherEchoServer {
         }
     }
 
-    static FileChannel openFile(String tmpDir, String subDir, String fileName) throws IOException {
+    public static FileChannel openFile(String tmpDir, String subDir, String fileName) throws IOException {
         File file = createFile(tmpDir, subDir, fileName);
         return FileChannel.open(file.toPath(), StandardOpenOption.READ, StandardOpenOption.WRITE);
     }

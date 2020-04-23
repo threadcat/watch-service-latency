@@ -6,18 +6,26 @@ import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class NixTaskSetTest {
+class LinuxTaskSetTest {
     private static final String THREAD_NAME = "latency_something";
 
     public static void main(String[] args) throws Exception {
         Thread.currentThread().setName(THREAD_NAME);
         printCpuMaskHex();
-        NixTaskSet.setCpuMask(THREAD_NAME, "0x4");
+        LinuxTaskSet.setCpuMask(THREAD_NAME, "0x4");
         printCpuMaskHex();
+        printRuntimeAtts();
+        LinuxTaskSet.setRealtimePriority(THREAD_NAME, 1);
+        printRuntimeAtts();
+    }
+
+    private static void printRuntimeAtts() throws IOException, InterruptedException {
+        String atts = LinuxTaskSet.getRuntimePolicy(THREAD_NAME);
+        System.out.println(atts);
     }
 
     private static void printCpuMaskHex() throws IOException, InterruptedException {
-        long cpuMask = NixTaskSet.getCpuMask(THREAD_NAME);
+        long cpuMask = LinuxTaskSet.getCpuMask(THREAD_NAME);
         System.out.println(Long.toBinaryString(cpuMask));
     }
 
@@ -25,10 +33,10 @@ class NixTaskSetTest {
     void testSetCpuMask() throws Exception {
         Thread.currentThread().setName(THREAD_NAME);
         //
-        NixTaskSet.setCpuMask(THREAD_NAME, "0x4");
-        assertEquals(4L, NixTaskSet.getCpuMask(THREAD_NAME));
+        LinuxTaskSet.setCpuMask(THREAD_NAME, "0x4");
+        assertEquals(4L, LinuxTaskSet.getCpuMask(THREAD_NAME));
         //
-        NixTaskSet.setCpuMask(THREAD_NAME, "0x8");
-        assertEquals(8L,  NixTaskSet.getCpuMask(THREAD_NAME));
+        LinuxTaskSet.setCpuMask(THREAD_NAME, "0x8");
+        assertEquals(8L,  LinuxTaskSet.getCpuMask(THREAD_NAME));
     }
 }

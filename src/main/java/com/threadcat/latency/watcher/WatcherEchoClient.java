@@ -1,7 +1,7 @@
 package com.threadcat.latency.watcher;
 
 import com.threadcat.latency.common.DataHandler;
-import com.threadcat.latency.common.NixTaskSet;
+import com.threadcat.latency.common.LinuxTaskSet;
 import com.threadcat.latency.common.PingClient;
 
 import java.io.IOException;
@@ -30,7 +30,7 @@ public class WatcherEchoClient {
         int warmup = Integer.parseInt(args[2]);
         int measure = Integer.parseInt(args[3]);
         Thread.currentThread().setName(WATCHER_ECHO_CLIENT);
-        NixTaskSet.setCpuMask(WATCHER_ECHO_CLIENT, cpuMask);
+        LinuxTaskSet.setCpuMask(WATCHER_ECHO_CLIENT, cpuMask);
         eventLoop(dir, warmup, measure);
     }
 

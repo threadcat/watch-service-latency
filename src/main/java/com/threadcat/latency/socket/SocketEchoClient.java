@@ -1,7 +1,7 @@
 package com.threadcat.latency.socket;
 
 import com.threadcat.latency.common.DataHandler;
-import com.threadcat.latency.common.NixTaskSet;
+import com.threadcat.latency.common.LinuxTaskSet;
 import com.threadcat.latency.common.PingClient;
 
 import java.io.IOException;
@@ -33,7 +33,7 @@ public class SocketEchoClient {
         int warmup = Integer.parseInt(args[3]);
         int measure = Integer.parseInt(args[4]);
         Thread.currentThread().setName(SOCKET_ECHO_CLIENT);
-        NixTaskSet.setCpuMask(SOCKET_ECHO_CLIENT, cpuMask);
+        LinuxTaskSet.setCpuMask(SOCKET_ECHO_CLIENT, cpuMask);
         SocketChannel channel = openSocket(host, port);
         eventLoop(channel, warmup, measure);
     }
@@ -67,7 +67,7 @@ public class SocketEchoClient {
         pingClient.printSummary();
     }
 
-    private static SocketChannel openSocket(String host, int port) throws IOException {
+    public static SocketChannel openSocket(String host, int port) throws IOException {
         SocketChannel channel = SocketChannel.open(new InetSocketAddress(host, port));
         channel.configureBlocking(false);
         channel.setOption(StandardSocketOptions.TCP_NODELAY, Boolean.TRUE);

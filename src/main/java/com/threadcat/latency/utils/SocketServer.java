@@ -1,25 +1,22 @@
-package com.threadcat.latency.socket;
+package com.threadcat.latency.utils;
 
 import com.threadcat.latency.common.DataHandler;
 import com.threadcat.latency.common.LinuxTaskSet;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.StandardSocketOptions;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
-import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.Set;
 
+import static com.threadcat.latency.socket.SocketEchoServer.processAcceptableKey;
+import static com.threadcat.latency.socket.SocketEchoServer.startSocketAcceptor;
+
 /**
- * Socket latency test echo server.
- * Reads sequence number from request and replies with that number and timestamp in response.
- *
- * @author threadcat
+ * Data sink for {@link SocketClient}.
  */
-public class SocketEchoServer {
-    private static final String SOCKET_ECHO_SERVER = "socket_echo_server";
+public class SocketServer {
+    private static final String SOCKET_SERVER = "socket_server";
 
     public static void main(String[] args) throws Exception {
         if (args.length < 3) {
@@ -29,8 +26,8 @@ public class SocketEchoServer {
         String host = args[0];
         int port = Integer.parseInt(args[1]);
         String cpuMask = args[2];
-        Thread.currentThread().setName(SOCKET_ECHO_SERVER);
-        LinuxTaskSet.setCpuMask(SOCKET_ECHO_SERVER, cpuMask);
+        Thread.currentThread().setName(SOCKET_SERVER);
+        LinuxTaskSet.setCpuMask(SOCKET_SERVER, cpuMask);
         Selector selector = startSocketAcceptor(host, port);
         eventLoop(selector);
     }
@@ -58,33 +55,10 @@ public class SocketEchoServer {
         }
     }
 
-    public static Selector startSocketAcceptor(String host, int port) throws IOException {
-        ServerSocketChannel serverChannel = ServerSocketChannel.open();
-        serverChannel.configureBlocking(false);
-        serverChannel.setOption(StandardSocketOptions.SO_REUSEADDR, Boolean.TRUE);
-        serverChannel.bind(new InetSocketAddress(host, port));
-        Selector selector = Selector.open();
-        serverChannel.register(selector, SelectionKey.OP_ACCEPT);
-        return selector;
-    }
-
-    public static void processAcceptableKey(SelectionKey key) throws IOException {
-        SocketChannel channel = ((ServerSocketChannel) key.channel()).accept();
-        channel.configureBlocking(false);
-        channel.setOption(StandardSocketOptions.TCP_NODELAY, Boolean.TRUE);
-        channel.register(key.selector(), SelectionKey.OP_READ);
-        System.out.println("Connection accepted " + channel.getRemoteAddress());
-    }
-
     private static void processReadableKey(SelectionKey key, DataHandler dataHandler) throws IOException {
         SocketChannel channel = (SocketChannel) key.channel();
         if (dataHandler.readSocket(channel)) {
-            long sequence = dataHandler.getSequence();
-            long timestamp = System.nanoTime();
-            if (!dataHandler.writeSocket(channel, sequence, timestamp)) {
-                System.out.println("Connection broken " + channel.getRemoteAddress());
-                key.cancel();
-            }
+            //
         } else {
             System.out.println("Disconnected " + channel.getRemoteAddress());
             key.cancel();
