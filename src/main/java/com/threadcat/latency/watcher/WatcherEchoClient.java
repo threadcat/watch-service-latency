@@ -8,7 +8,9 @@ import java.io.IOException;
 import java.nio.channels.FileChannel;
 import java.nio.file.WatchService;
 
-import static com.threadcat.latency.watcher.WatcherEchoServer.*;
+import static com.threadcat.latency.utils.FileUtils.*;
+import static com.threadcat.latency.watcher.WatcherEchoServer.poll;
+import static com.threadcat.latency.watcher.WatcherEchoServer.registerWatch;
 
 /**
  * WatchService latency test client.
@@ -18,7 +20,7 @@ import static com.threadcat.latency.watcher.WatcherEchoServer.*;
  * @author threadcat
  */
 public class WatcherEchoClient {
-    private static final String WATCHER_ECHO_CLIENT = "watcher_echo_client";
+    private static final String THREAD_NAME = "watcher_echo_client";
 
     public static void main(String[] args) throws Exception {
         if (args.length < 4) {
@@ -29,8 +31,8 @@ public class WatcherEchoClient {
         String cpuMask = args[1];
         int warmup = Integer.parseInt(args[2]);
         int measure = Integer.parseInt(args[3]);
-        Thread.currentThread().setName(WATCHER_ECHO_CLIENT);
-        LinuxTaskSet.setCpuMask(WATCHER_ECHO_CLIENT, cpuMask);
+        Thread.currentThread().setName(THREAD_NAME);
+        LinuxTaskSet.setCpuMask(THREAD_NAME, cpuMask);
         eventLoop(dir, warmup, measure);
     }
 

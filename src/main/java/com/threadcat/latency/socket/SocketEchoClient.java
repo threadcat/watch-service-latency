@@ -20,7 +20,7 @@ import java.util.Set;
  * @author threadcat
  */
 public class SocketEchoClient {
-    private static final String SOCKET_ECHO_CLIENT = "socket_echo_client";
+    private static final String THREAD_NAME = "socket-echo-client";
 
     public static void main(String[] args) throws Exception {
         if (args.length < 5) {
@@ -32,8 +32,8 @@ public class SocketEchoClient {
         String cpuMask = args[2];
         int warmup = Integer.parseInt(args[3]);
         int measure = Integer.parseInt(args[4]);
-        Thread.currentThread().setName(SOCKET_ECHO_CLIENT);
-        LinuxTaskSet.setCpuMask(SOCKET_ECHO_CLIENT, cpuMask);
+        Thread.currentThread().setName(THREAD_NAME);
+        LinuxTaskSet.setCpuMask(THREAD_NAME, cpuMask);
         SocketChannel channel = openSocket(host, port);
         eventLoop(channel, warmup, measure);
     }

@@ -19,7 +19,7 @@ import java.util.Set;
  * @author threadcat
  */
 public class SocketEchoServer {
-    private static final String SOCKET_ECHO_SERVER = "socket_echo_server";
+    private static final String THREAD_NAME = "socket-echo-server";
 
     public static void main(String[] args) throws Exception {
         if (args.length < 3) {
@@ -29,8 +29,8 @@ public class SocketEchoServer {
         String host = args[0];
         int port = Integer.parseInt(args[1]);
         String cpuMask = args[2];
-        Thread.currentThread().setName(SOCKET_ECHO_SERVER);
-        LinuxTaskSet.setCpuMask(SOCKET_ECHO_SERVER, cpuMask);
+        Thread.currentThread().setName(THREAD_NAME);
+        LinuxTaskSet.setCpuMask(THREAD_NAME, cpuMask);
         Selector selector = startSocketAcceptor(host, port);
         eventLoop(selector);
     }

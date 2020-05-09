@@ -7,11 +7,10 @@ import java.io.IOException;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 
-import static com.threadcat.latency.watcher.WatcherEchoServer.*;
-import static com.threadcat.latency.watcher.WatcherEchoServer.FILE_B;
+import static com.threadcat.latency.utils.FileUtils.*;
 
 public class MemEchoServer {
-    private static final String MEM_ECHO_SERVER = "mem-echo-server";
+    private static final String THREAD_NAME = "mem-echo-server";
 
     public static void main(String[] args) throws Exception {
         if (args.length < 2) {
@@ -19,9 +18,9 @@ public class MemEchoServer {
             return;
         }
         String dir = args[0];
-        String cliCpuMask = args[1];
-        Thread.currentThread().setName(MEM_ECHO_SERVER);
-        LinuxTaskSet.setCpuMask(MEM_ECHO_SERVER, cliCpuMask);
+        String cpuMask = args[1];
+        Thread.currentThread().setName(THREAD_NAME);
+        LinuxTaskSet.setCpuMask(THREAD_NAME, cpuMask);
         eventLoop(dir);
     }
 
@@ -34,12 +33,12 @@ public class MemEchoServer {
             System.out.println("Started");
             long lastSequence = -1L;
             for (; ; ) {
-                    long sequence = dataHandler.getSequence();
-                    if (sequence != lastSequence) {
-                        long timestamp = System.nanoTime();
-                        dataHandler.write(sequence, timestamp);
-                        lastSequence = sequence;
-                    }
+                long sequence = dataHandler.getSequence();
+                if (sequence != lastSequence) {
+                    long timestamp = System.nanoTime();
+                    dataHandler.write(sequence, timestamp);
+                    lastSequence = sequence;
+                }
             }
         } catch (IOException e) {
             System.out.println("Failed running echo server");

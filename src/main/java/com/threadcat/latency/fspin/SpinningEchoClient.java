@@ -7,10 +7,10 @@ import com.threadcat.latency.common.PingClient;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
 
-import static com.threadcat.latency.watcher.WatcherEchoServer.*;
+import static com.threadcat.latency.utils.FileUtils.*;
 
 public class SpinningEchoClient {
-    private static final String SPIN_ECHO_CLIENT = "spin-echo-client";
+    private static final String THREAD_NAME = "spin-echo-client";
 
     public static void main(String[] args) throws Exception {
         if (args.length < 4) {
@@ -18,11 +18,11 @@ public class SpinningEchoClient {
             return;
         }
         String dir = args[0];
-        String cliCpuMask = args[1];
+        String cpuMask = args[1];
         int warmup = Integer.parseInt(args[2]);
         int measure = Integer.parseInt(args[3]);
-        Thread.currentThread().setName(SPIN_ECHO_CLIENT);
-        LinuxTaskSet.setCpuMask(SPIN_ECHO_CLIENT, cliCpuMask);
+        Thread.currentThread().setName(THREAD_NAME);
+        LinuxTaskSet.setCpuMask(THREAD_NAME, cpuMask);
         eventLoop(dir, warmup, measure);
     }
 
