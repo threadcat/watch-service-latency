@@ -23,7 +23,7 @@ public class TimeGranularity {
 
     private static void nanoLatencyAndGranularity() {
         int warmup = 1_000_000;
-        int measure = 10_000_000;
+        int measure = 1_000_000;
         int num = measure + warmup;
         long[] times = new long[num];
         for (int i = 0; i < num; i++) {
@@ -31,17 +31,13 @@ public class TimeGranularity {
         }
         double elapsed = times[num - 1] - times[warmup];
         double latency = elapsed / measure;
-        // Figuring out granularity and jitter
+        // Analysing result
         double total = 0;
         int counter = 0;
         long max = 0;
-        int jitter = 0;
         for (int i = warmup + 1; i < num; i++) {
             long delta = times[i] - times[i - 1];
             if (delta != 0L) {
-                if (delta > 3 * latency) {
-                    jitter++;
-                }
                 if (delta > max) {
                     max = delta;
                 }
@@ -51,8 +47,8 @@ public class TimeGranularity {
         }
         double granularity = total / counter;
         System.out.printf(
-                "Executed %d times in %.3f milliseconds, nanoTime() latency avg %.3f, granularity avg %.3f, max %d ns, jitter %d\n",
-                measure, 1e-6 * elapsed, latency, granularity, max, jitter);
+                "Executed %d times in %.3f milliseconds, nanoTime() latency avg %.3f, granularity avg %.3f, max %d ns\n",
+                measure, 1e-6 * elapsed, latency, granularity, max);
     }
 
     private static void milliGranularity() {

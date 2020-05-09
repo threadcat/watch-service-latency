@@ -4,11 +4,11 @@ import com.sun.nio.file.SensitivityWatchEventModifier;
 import com.threadcat.latency.common.DataHandler;
 import com.threadcat.latency.common.LinuxTaskSet;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
 import java.nio.file.*;
 
+import static com.threadcat.latency.utils.FileUtils.*;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
 
 /**
@@ -18,11 +18,7 @@ import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
  * @author threadcat
  */
 public class WatcherEchoServer {
-    private static final String WATCHER_ECHO_SERVER = "watcher_echo_server";
-    public static final String WATCH_DIR_A = "watch_dir_a";
-    public static final String WATCH_DIR_B = "watch_dir_b";
-    public static final String FILE_A = "watch_file_a.dat";
-    public static final String FILE_B = "watch_file_b.dat";
+    private static final String THREAD_NAME = "watcher_echo_server";
 
     public static void main(String[] args) throws Exception {
         if (args.length < 2) {
@@ -31,8 +27,8 @@ public class WatcherEchoServer {
         }
         String dir = args[0];
         String cpuMask = args[1];
-        Thread.currentThread().setName(WATCHER_ECHO_SERVER);
-        LinuxTaskSet.setCpuMask(WATCHER_ECHO_SERVER, cpuMask);
+        Thread.currentThread().setName(THREAD_NAME);
+        LinuxTaskSet.setCpuMask(THREAD_NAME, cpuMask);
         eventLoop(dir);
     }
 
@@ -58,11 +54,6 @@ public class WatcherEchoServer {
         }
     }
 
-    public static FileChannel openFile(String tmpDir, String subDir, String fileName) throws IOException {
-        File file = createFile(tmpDir, subDir, fileName);
-        return FileChannel.open(file.toPath(), StandardOpenOption.READ, StandardOpenOption.WRITE);
-    }
-
     static WatchService registerWatch(String tmpDir, String subDir) throws IOException {
         WatchService ws = FileSystems.getDefault().newWatchService();
         WatchEvent.Kind<?>[] eventTypes = new WatchEvent.Kind[]{ENTRY_MODIFY};
@@ -77,20 +68,4 @@ public class WatcherEchoServer {
         key.reset();
     }
 
-    private static File createFile(String tmpDir, String subDir, String fileName) throws IOException {
-        Path path = Path.of(tmpDir, subDir);
-        File file = new File(path.toFile(), fileName);
-        File dir = file.getParentFile();
-        if (!dir.exists()) {
-            if (!dir.mkdirs()) {
-                throw new RuntimeException("Failed creating directory " + dir.getAbsolutePath());
-            }
-        }
-        if (!file.exists()) {
-            if (!file.createNewFile()) {
-                throw new RuntimeException("Failed creating file " + file.getAbsolutePath());
-            }
-        }
-        return file;
-    }
 }

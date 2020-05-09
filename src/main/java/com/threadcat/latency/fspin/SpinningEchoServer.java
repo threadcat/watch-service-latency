@@ -6,13 +6,13 @@ import com.threadcat.latency.common.LinuxTaskSet;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
 
-import static com.threadcat.latency.watcher.WatcherEchoServer.*;
+import static com.threadcat.latency.utils.FileUtils.*;
 
 /**
  *
  */
 public class SpinningEchoServer {
-    private static final String SPIN_ECHO_SERVER = "spin-echo-server";
+    private static final String THREAD_NAME = "spin-echo-server";
 
     public static void main(String[] args) throws Exception {
         if (args.length < 2) {
@@ -20,9 +20,9 @@ public class SpinningEchoServer {
             return;
         }
         String dir = args[0];
-        String cliCpuMask = args[1];
-        Thread.currentThread().setName(SPIN_ECHO_SERVER);
-        LinuxTaskSet.setCpuMask(SPIN_ECHO_SERVER, cliCpuMask);
+        String cpuMask = args[1];
+        Thread.currentThread().setName(THREAD_NAME);
+        LinuxTaskSet.setCpuMask(THREAD_NAME, cpuMask);
         eventLoop(dir);
     }
 

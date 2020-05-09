@@ -32,6 +32,9 @@ public class LinuxTaskSet {
         return Long.parseLong(cpuMask);
     }
 
+    /**
+     * @param cpuMask - Hex code string, e.g. "0x4"
+     */
     public static void setCpuMask(String threadName, String cpuMask) throws IOException, InterruptedException {
         String cmd = SET_MASK
                 .replace("CPU_MASK", cpuMask)

@@ -6,8 +6,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 
-import static com.threadcat.latency.watcher.WatcherEchoServer.*;
-
 /**
  * Compares 'append' vs 'update' FileChannel latency.
  */
@@ -42,8 +40,8 @@ public class FileAppendUpdate {
     }
 
     private static void eventLoop(String dir, int warmup, int measure) throws IOException {
-        FileChannel channelA = openFile(dir, WATCH_DIR_A, FILE_A);
-        FileChannel channelB = openFile(dir, WATCH_DIR_B, FILE_B);
+        FileChannel channelA = FileUtils.openFile(dir, FileUtils.WATCH_DIR_A, FileUtils.FILE_A);
+        FileChannel channelB = FileUtils.openFile(dir, FileUtils.WATCH_DIR_B, FileUtils.FILE_B);
         channelA.truncate(0);
         ByteBuffer buffer = ByteBuffer.allocate(16);
         update(channelA, buffer, false, warmup);
