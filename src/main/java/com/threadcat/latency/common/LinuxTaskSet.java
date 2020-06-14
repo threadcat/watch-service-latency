@@ -13,8 +13,8 @@ import static java.nio.charset.StandardCharsets.US_ASCII;
  * <p>
  * Grubby persistent changes from command line:
  * grubby --info=DEFAULT
- * grubby --args=isolcpus=2,3 --update-kernel /boot/vmlinuz-5.5.13-200.fc31.x86_64
- * grubby --remove-args="isolcpus" --update-kernel /boot/vmlinuz-5.5.13-200.fc31.x86_64
+ * grubby --args=isolcpus=2,3 --update-kernel /boot/vmlinuz-5.6.11-200.fc31.x86_64
+ * grubby --remove-args="isolcpus" --update-kernel /boot/vmlinuz-5.6.11-200.fc31.x86_64
  *
  * @author threadcat
  */
@@ -45,10 +45,9 @@ public class LinuxTaskSet {
     public static String getRuntimePolicy(String threadName) throws IOException, InterruptedException {
         String cmd = GET_RT_ATT.replace("LWP_PID", lightWeightProcessId(threadName));
         String output = executeGet(cmd, "runtime policy");
-        String atts = output
+        return output
                 .replaceAll("(\n.*: )", ",")
                 .replaceAll("(^.*: )|(\n)", "");
-        return atts;
     }
 
     /**

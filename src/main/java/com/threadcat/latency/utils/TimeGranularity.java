@@ -17,17 +17,19 @@ public class TimeGranularity {
     public static void main(String[] args) throws Exception {
         Thread.currentThread().setName(THREAD_NAME);
         LinuxTaskSet.setCpuMask(THREAD_NAME, "0x4");
-        nanoLatencyAndGranularity();
-        milliGranularity();
+        latencyAndGranularity(false);
+        latencyAndGranularity(true);
     }
 
-    private static void nanoLatencyAndGranularity() {
+    private static void latencyAndGranularity(boolean nano) {
         int warmup = 1_000_000;
         int measure = 1_000_000;
         int num = measure + warmup;
         long[] times = new long[num];
-        for (int i = 0; i < num; i++) {
-            times[i] = System.nanoTime();
+        if (nano) {
+            fillNanos(times);
+        } else {
+            fillMillis(times);
         }
         double elapsed = times[num - 1] - times[warmup];
         double latency = elapsed / measure;
@@ -46,17 +48,33 @@ public class TimeGranularity {
             }
         }
         double granularity = total / counter;
-        System.out.printf(
-                "Executed %d times in %.3f milliseconds, nanoTime() latency avg %.3f, granularity avg %.3f, max %d ns\n",
-                measure, 1e-6 * elapsed, latency, granularity, max);
+        String type = "currentTimeMillis()";
+        if (nano) {
+            type = "nanoTime()";
+            elapsed *= 1.e-6;
+        } else {
+            latency *= 1e6;
+        }
+        printResult(type, measure, elapsed, latency, max, granularity);
     }
 
-    private static void milliGranularity() {
-        long timeA = System.currentTimeMillis();
-        long timeB;
-        do {
-            timeB = System.currentTimeMillis();
-        } while (timeA == timeB);
-        System.out.printf("currentMillis() granularity %d", timeB - timeA);
+    private static void printResult(String type, int measure, double elapsed, double latency, long max, double granularity) {
+        System.out.printf(
+                "Executed %d times in %.3f ms, %s latency avg %.3f ns, granularity avg %.3f, max %d\n",
+                measure, elapsed, type, latency, granularity, max);
+    }
+
+    private static void fillNanos(long[] times) {
+        int num = times.length;
+        for (int i = 0; i < num; i++) {
+            times[i] = System.nanoTime();
+        }
+    }
+
+    private static void fillMillis(long[] times) {
+        int num = times.length;
+        for (int i = 0; i < num; i++) {
+            times[i] = System.currentTimeMillis();
+        }
     }
 }
