@@ -62,6 +62,14 @@ gradle build
 gradle assembleDist
 ~~~
 
+Run - use scripts in distribution 'build/distribuions/watch-service-latency-xxx.tar'. Fast track example:
+~~~
+gradle install
+./build/install/watch-service-latency/socket_echo_server.sh
+./build/install/watch-service-latency/socket_echo_client.sh
+~~~
+
+
 Notes and considerations:
 
 [**Wiki**](../../wiki/Notes)
